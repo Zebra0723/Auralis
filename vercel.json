@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "prisma generate && next build",
+  "installCommand": "npm ci",
+  "crons": [
+    {
+      "path": "/api/cron/drain",
+      "schedule": "* * * * *"
+    }
+  ],
+  "functions": {
+    "app/api/cron/drain/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
