@@ -1,0 +1,420 @@
+// Auralis — relational schema
+// Design notes:
+//  * Hub-and-spoke: every connection reconciles against a CanonicalRecord rather
+//    than against every other connection. N mappings instead of N^2.
+//  * FieldCheckpoint stores the last value Auralis observed on each side. Conflict
+//    detection is "both sides moved since the checkpoint", which is only decidable
+//    with that stored history.
+//  * OAuth material lives in its own table, is encrypted at rest, and is never
+//    included in any payload returned to the browser.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- identity
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String
+  emailVerified DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  memberships Membership[]
+  sessions    Session[]
+  auditLogs   AuditLog[]
+
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships      Membership[]
+  connections      Connection[]
+  canonicalRecords CanonicalRecord[]
+  syncConfigs      SyncConfig[]
+  rules            Rule[]
+  auditLogs        AuditLog[]
+  subscription     Subscription?
+
+  @@index([slug])
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Membership {
+  id     String @id @default(cuid())
+  userId String
+  orgId  String
+  role   Role   @default(OWNER)
+
+  createdAt DateTime @default(now())
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+}
+
+// ------------------------------------------------------------ connections
+
+enum ConnectionStatus {
+  ACTIVE
+  NEEDS_REAUTH
+  DISABLED
+  ERROR
+}
+
+model Connection {
+  id           String           @id @default(cuid())
+  orgId        String
+  provider     String // registry key, e.g. "github" — not an enum so new providers need no migration
+  displayName  String
+  externalId   String? // account id at the provider
+  accountLabel String? // human label, e.g. the handle or email shown in the UI
+  status       ConnectionStatus @default(ACTIVE)
+  statusDetail String? // user-facing explanation when status is not ACTIVE
+  scopes       String[]
+  lastSyncedAt DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  org         Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  credential  OAuthCredential?
+  sourceSyncs SyncConfig[]     @relation("SourceConnection")
+  targetSyncs SyncConfig[]     @relation("TargetConnection")
+  checkpoints FieldCheckpoint[]
+  events      SyncEvent[]
+
+  @@unique([orgId, provider, externalId])
+  @@index([orgId, status])
+  @@index([provider])
+}
+
+/// Encrypted OAuth material. Rows are read only inside the server-side integration
+/// layer; no API route serialises this model.
+model OAuthCredential {
+  id                    String    @id @default(cuid())
+  connectionId          String    @unique
+  accessTokenCipher     String // AES-256-GCM, base64
+  refreshTokenCipher    String?
+  tokenType             String?
+  expiresAt             DateTime?
+  keyVersion            Int       @default(1)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  connection Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+/// Short-lived state for in-flight OAuth authorisation (CSRF state + PKCE verifier).
+model OAuthState {
+  id           String   @id @default(cuid())
+  state        String   @unique
+  orgId        String
+  provider     String
+  codeVerifier String?
+  redirectTo   String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+// -------------------------------------------------------------- canonical
+
+/// The hub. One row per logical entity Auralis knows about (a profile, a contact).
+model CanonicalRecord {
+  id         String   @id @default(cuid())
+  orgId      String
+  recordType String // "profile" | "contact" | ...
+  externalKey String? // stable dedupe key, e.g. primary email
+  fields     Json     @default("{}")
+  version    Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  org         Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  checkpoints FieldCheckpoint[]
+  conflicts   Conflict[]
+
+  @@unique([orgId, recordType, externalKey])
+  @@index([orgId, recordType])
+}
+
+/// Last value Auralis saw for one field on one connection. Without this, conflict
+/// detection degrades to last-writer-wins.
+model FieldCheckpoint {
+  id           String   @id @default(cuid())
+  recordId     String
+  connectionId String
+  field        String
+  valueHash    String
+  value        String?
+  observedAt   DateTime @default(now())
+
+  record     CanonicalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  connection Connection      @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, connectionId, field])
+  @@index([connectionId])
+}
+
+// ------------------------------------------------------------------ syncs
+
+enum SyncDirection {
+  ONE_WAY // source -> target
+  TWO_WAY
+}
+
+enum ConflictPolicy {
+  ASK // pause the field and raise a Conflict
+  PREFER_SOURCE
+  PREFER_TARGET
+  NEWEST_WINS
+}
+
+enum SyncFrequency {
+  REALTIME // webhook-driven where the provider supports it
+  EVERY_15_MIN
+  HOURLY
+  DAILY
+  MANUAL
+}
+
+model SyncConfig {
+  id                 String         @id @default(cuid())
+  orgId              String
+  name               String
+  recordType         String
+  sourceConnectionId String
+  targetConnectionId String
+  fields             String[] // which fields participate
+  direction          SyncDirection  @default(ONE_WAY)
+  frequency          SyncFrequency  @default(HOURLY)
+  conflictPolicy     ConflictPolicy @default(ASK)
+  propagateDeletes   Boolean        @default(false)
+  enabled            Boolean        @default(true)
+  lastRunAt          DateTime?
+  nextRunAt          DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  source    Connection   @relation("SourceConnection", fields: [sourceConnectionId], references: [id], onDelete: Cascade)
+  target    Connection   @relation("TargetConnection", fields: [targetConnectionId], references: [id], onDelete: Cascade)
+  jobs      SyncJob[]
+  events    SyncEvent[]
+  conflicts Conflict[]
+
+  @@index([orgId, enabled])
+  @@index([nextRunAt])
+}
+
+// -------------------------------------------------------------- job queue
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  RETRYING
+  CANCELLED
+}
+
+/// Claimed with SELECT ... FOR UPDATE SKIP LOCKED so multiple workers can run.
+model SyncJob {
+  id           String    @id @default(cuid())
+  orgId        String
+  syncConfigId String?
+  kind         String    @default("sync") // sync | refresh_token | backfill
+  status       JobStatus @default(QUEUED)
+  payload      Json      @default("{}")
+  attempts     Int       @default(0)
+  maxAttempts  Int       @default(5)
+  runAt        DateTime  @default(now())
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  lockedBy     String?
+  lockedAt     DateTime?
+  lastError    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  syncConfig SyncConfig? @relation(fields: [syncConfigId], references: [id], onDelete: Cascade)
+
+  @@index([status, runAt])
+  @@index([orgId, createdAt])
+  @@index([syncConfigId])
+}
+
+// --------------------------------------------------------------- activity
+
+enum EventLevel {
+  SUCCESS
+  INFO
+  WARNING
+  ERROR
+  CONFLICT
+}
+
+model SyncEvent {
+  id           String     @id @default(cuid())
+  orgId        String
+  syncConfigId String?
+  connectionId String?
+  level        EventLevel @default(INFO)
+  title        String
+  detail       String?
+  field        String?
+  sourceLabel  String?
+  targetLabel  String?
+  createdAt    DateTime   @default(now())
+
+  syncConfig SyncConfig? @relation(fields: [syncConfigId], references: [id], onDelete: Cascade)
+  connection Connection? @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([orgId, level])
+}
+
+enum ConflictStatus {
+  OPEN
+  RESOLVED
+  IGNORED
+}
+
+model Conflict {
+  id           String         @id @default(cuid())
+  orgId        String
+  syncConfigId String
+  recordId     String
+  field        String
+  sourceValue  String?
+  targetValue  String?
+  sourceLabel  String
+  targetLabel  String
+  status       ConflictStatus @default(OPEN)
+  resolution   String? // keep_source | keep_target | merge | always_source | always_target
+  resolvedAt   DateTime?
+  createdAt    DateTime       @default(now())
+
+  syncConfig SyncConfig      @relation(fields: [syncConfigId], references: [id], onDelete: Cascade)
+  record     CanonicalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@unique([syncConfigId, recordId, field, status])
+  @@index([orgId, status])
+}
+
+// ------------------------------------------------------------------ rules
+
+model Rule {
+  id          String   @id @default(cuid())
+  orgId       String
+  name        String
+  enabled     Boolean  @default(true)
+  // trigger: { connectionId, recordType, field }
+  trigger     Json
+  // conditions: [{ field, operator, value }]
+  conditions  Json     @default("[]")
+  // actions: [{ type, connectionId, field, value }]
+  actions     Json     @default("[]")
+  lastFiredAt DateTime?
+  fireCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, enabled])
+}
+
+// -------------------------------------------------------------- audit/plan
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  orgId     String
+  userId    String?
+  action    String
+  target    String?
+  metadata  Json     @default("{}")
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([orgId, createdAt])
+  @@index([action])
+}
+
+enum PlanTier {
+  FREE
+  PLUS
+  BUSINESS
+}
+
+model Plan {
+  id             String   @id @default(cuid())
+  tier           PlanTier @unique
+  name           String
+  priceMonthly   Int // pence
+  maxConnections Int // -1 = unlimited
+  maxSyncs       Int
+  monthlyOps     Int
+  advancedRules  Boolean  @default(false)
+  auditLogs      Boolean  @default(false)
+  teamFeatures   Boolean  @default(false)
+  prioritySync   Boolean  @default(false)
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id             String   @id @default(cuid())
+  orgId          String   @unique
+  planId         String
+  opsThisPeriod  Int      @default(0)
+  periodStart    DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  plan Plan         @relation(fields: [planId], references: [id])
+}
