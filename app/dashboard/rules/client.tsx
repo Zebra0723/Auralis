@@ -134,7 +134,7 @@ export function RulesClient({
                         </span>
                       ))}
                       <br />
-                      <span className="eyebrow mr-2" style={{ color: "var(--signal)" }}>Then</span>
+                      <span className="eyebrow mr-2" style={{ color: "var(--accent)" }}>Then</span>
                       {rule.actions.map((action, i) => (
                         <span key={i}>
                           {i > 0 && ", and "}
@@ -383,9 +383,9 @@ function RuleBuilder({
         {/* THEN */}
         <div
           className="mt-2.5 rounded-[8px] p-4"
-          style={{ background: "var(--signal-soft)" }}
+          style={{ background: "var(--accent-soft)" }}
         >
-          <span className="eyebrow" style={{ color: "var(--signal)" }}>Then set</span>
+          <span className="eyebrow" style={{ color: "var(--accent)" }}>Then set</span>
           <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
             <select
               className="input"

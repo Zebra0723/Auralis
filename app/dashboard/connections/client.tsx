@@ -373,7 +373,7 @@ function TokenDialog({
             target="_blank"
             rel="noreferrer"
             className="link-underline text-[13px] inline-block mt-2"
-            style={{ color: "var(--signal)" }}
+            style={{ color: "var(--accent)" }}
           >
             Create a token on {entry.name}
           </a>

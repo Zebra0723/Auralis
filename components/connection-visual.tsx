@@ -1,162 +1,183 @@
 "use client";
 
 /**
- * The hero diagram: services on the left and right, Auralis in the middle,
- * with signal travelling along the connectors.
+ * The hero panel: connected services on the left, the fields they hold in
+ * common on the right, Auralis reconciling between them.
  *
- * Drawn as one inline SVG so it scales cleanly, needs no images, and inherits
- * the theme through currentColor and CSS variables. Motion is pure CSS, so it
- * costs nothing at runtime and stops entirely under prefers-reduced-motion.
+ * Drawn as one inline SVG so it scales cleanly, needs no image assets, and
+ * inherits the palette through CSS variables. Motion is pure CSS and stops
+ * entirely under prefers-reduced-motion.
  */
 
-const LEFT = [
-  { label: "Google", mark: "G", y: 40 },
-  { label: "Microsoft", mark: "M", y: 110 },
-  { label: "Slack", mark: "S", y: 180 },
-  { label: "GitHub", mark: "GH", y: 250 },
+const SERVICES = [
+  { label: "Google", mark: "G", y: 24 },
+  { label: "Microsoft", mark: "M", y: 78 },
+  { label: "Slack", mark: "S", y: 132 },
+  { label: "GitHub", mark: "GH", y: 186 },
+  { label: "Zoom", mark: "Z", y: 240 },
 ];
 
-const RIGHT = [
-  { label: "Zoom", mark: "Z", y: 40 },
-  { label: "Trello", mark: "T", y: 110 },
-  { label: "Dropbox", mark: "D", y: 180 },
-  { label: "Asana", mark: "A", y: 250 },
+const FIELDS = [
+  { label: "Display name", y: 38 },
+  { label: "Job title", y: 92 },
+  { label: "Phone number", y: 146 },
+  { label: "Location", y: 200 },
 ];
 
 export function ConnectionVisual() {
   return (
-    <div className="w-full" aria-hidden="true">
-      <svg
-        viewBox="0 0 720 300"
-        className="w-full h-auto"
-        style={{ maxHeight: 340 }}
-        role="presentation"
+    <div
+      className="card overflow-hidden"
+      style={{ boxShadow: "var(--shadow-card)" }}
+      aria-hidden="true"
+    >
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 border-b"
+        style={{ borderColor: "var(--line-soft)", background: "var(--raised)" }}
       >
-        <defs>
-          <linearGradient id="fade-left" x1="0" x2="1">
-            <stop offset="0%" stopColor="var(--line)" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="var(--signal)" stopOpacity="0.5" />
-          </linearGradient>
-          <linearGradient id="fade-right" x1="0" x2="1">
-            <stop offset="0%" stopColor="var(--signal)" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="var(--line)" stopOpacity="0.15" />
-          </linearGradient>
-        </defs>
+        <span
+          className="w-1.5 h-1.5 rounded-full live-dot"
+          style={{ background: "var(--accent)" }}
+        />
+        <span className="eyebrow" style={{ fontSize: 10.5 }}>
+          Synchronizing
+        </span>
+      </div>
 
-        {LEFT.map((node, i) => (
-          <g key={node.label}>
-            <path
-              d={`M 138 ${node.y + 16} C 230 ${node.y + 16}, 250 150, 322 150`}
-              stroke="url(#fade-left)"
-              strokeWidth="1.25"
-              fill="none"
-            />
-            <path
-              d={`M 138 ${node.y + 16} C 230 ${node.y + 16}, 250 150, 322 150`}
-              stroke="var(--signal)"
-              strokeWidth="1.5"
-              fill="none"
-              strokeDasharray="3 220"
-              style={{
-                animation: `a-dash ${7 + i * 1.3}s linear infinite`,
-                animationDelay: `${i * 0.8}s`,
-                opacity: 0.85,
-              }}
-            />
-            <Node x={40} y={node.y} mark={node.mark} label={node.label} />
-          </g>
-        ))}
+      <div className="p-4">
+        <svg viewBox="0 0 520 290" className="w-full h-auto" role="presentation">
+          {SERVICES.map((node, i) => (
+            <g key={node.label}>
+              {/* Resting connector */}
+              <path
+                d={`M 152 ${node.y + 15} C 205 ${node.y + 15}, 215 145, 244 145`}
+                stroke="var(--line)"
+                strokeWidth="1"
+                fill="none"
+              />
+              {/* Travelling signal */}
+              <path
+                d={`M 152 ${node.y + 15} C 205 ${node.y + 15}, 215 145, 244 145`}
+                stroke="var(--accent)"
+                strokeWidth="1.5"
+                fill="none"
+                strokeDasharray="4 160"
+                style={{
+                  animation: `a-dash ${5 + i * 0.9}s linear infinite`,
+                  animationDelay: `${i * 0.5}s`,
+                }}
+              />
+              <Chip x={14} y={node.y} w={138} mark={node.mark} label={node.label} />
+            </g>
+          ))}
 
-        {RIGHT.map((node, i) => (
-          <g key={node.label}>
-            <path
-              d={`M 398 150 C 470 150, 490 ${node.y + 16}, 582 ${node.y + 16}`}
-              stroke="url(#fade-right)"
-              strokeWidth="1.25"
-              fill="none"
-            />
-            <path
-              d={`M 398 150 C 470 150, 490 ${node.y + 16}, 582 ${node.y + 16}`}
-              stroke="var(--signal)"
-              strokeWidth="1.5"
-              fill="none"
-              strokeDasharray="3 220"
-              style={{
-                animation: `a-dash ${6.5 + i * 1.1}s linear infinite`,
-                animationDelay: `${1.4 + i * 0.7}s`,
-                opacity: 0.85,
-              }}
-            />
-            <Node x={582} y={node.y} mark={node.mark} label={node.label} />
-          </g>
-        ))}
+          {FIELDS.map((field, i) => (
+            <g key={field.label}>
+              <path
+                d={`M 276 145 C 305 145, 315 ${field.y + 14}, 348 ${field.y + 14}`}
+                stroke="var(--line)"
+                strokeWidth="1"
+                fill="none"
+              />
+              <path
+                d={`M 276 145 C 305 145, 315 ${field.y + 14}, 348 ${field.y + 14}`}
+                stroke="var(--accent)"
+                strokeWidth="1.5"
+                fill="none"
+                strokeDasharray="4 160"
+                style={{
+                  animation: `a-dash ${5.4 + i * 0.8}s linear infinite`,
+                  animationDelay: `${0.9 + i * 0.45}s`,
+                }}
+              />
+              <FieldChip x={348} y={field.y} label={field.label} />
+            </g>
+          ))}
 
-        {/* Auralis core */}
-        <g>
+          {/* Auralis core */}
           <rect
-            x="322"
-            y="114"
-            width="76"
-            height="72"
-            rx="14"
+            x="244"
+            y="121"
+            width="32"
+            height="48"
+            rx="8"
             fill="var(--surface)"
-            stroke="var(--signal)"
-            strokeWidth="1.5"
+            stroke="var(--ink)"
+            strokeWidth="1.25"
           />
-          <circle cx="360" cy="150" r="5" fill="var(--signal)" className="live-dot" />
-          <circle
-            cx="360"
-            cy="150"
-            r="15"
-            fill="none"
-            stroke="var(--signal)"
-            strokeWidth="1"
-            opacity="0.35"
-          />
-          <text
-            x="360"
-            y="203"
-            textAnchor="middle"
-            fontSize="11"
-            fill="var(--ink-faint)"
-            letterSpacing="0.14em"
-            fontWeight="500"
-          >
-            AURALIS
-          </text>
-        </g>
-      </svg>
+          <circle cx="260" cy="145" r="4" fill="var(--accent)" className="live-dot" />
+        </svg>
+      </div>
     </div>
   );
 }
 
-function Node({ x, y, mark, label }: { x: number; y: number; mark: string; label: string }) {
+function Chip({
+  x,
+  y,
+  w,
+  mark,
+  label,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  mark: string;
+  label: string;
+}) {
   return (
     <g>
       <rect
         x={x}
         y={y}
-        width="98"
-        height="32"
-        rx="8"
+        width={w}
+        height="30"
+        rx="6"
         fill="var(--surface)"
         stroke="var(--line)"
         strokeWidth="1"
       />
-      <circle cx={x + 17} cy={y + 16} r="7" fill="var(--raised)" />
+      <rect x={x + 8} y={y + 8} width="14" height="14" rx="4" fill="var(--raised)" />
       <text
-        x={x + 17}
-        y={y + 19.5}
+        x={x + 15}
+        y={y + 18.5}
         textAnchor="middle"
-        fontSize="7.5"
+        fontSize="7"
         fontWeight="600"
         fill="var(--ink-soft)"
       >
         {mark}
       </text>
-      <text x={x + 32} y={y + 20} fontSize="11.5" fill="var(--ink-soft)" fontWeight="450">
+      <text x={x + 30} y={y + 19.5} fontSize="11" fill="var(--ink)" fontWeight="450">
         {label}
       </text>
+    </g>
+  );
+}
+
+function FieldChip({ x, y, label }: { x: number; y: number; label: string }) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width="158"
+        height="28"
+        rx="6"
+        fill="var(--accent-soft)"
+        stroke="none"
+      />
+      <text x={x + 12} y={y + 18} fontSize="11" fill="var(--accent)" fontWeight="500">
+        {label}
+      </text>
+      <path
+        d={`M ${x + 140} ${y + 14} l 3 3.5 l 6 -7`}
+        stroke="var(--accent)"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </g>
   );
 }

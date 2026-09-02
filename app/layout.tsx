@@ -21,33 +21,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbfaf8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0d0c" },
-  ],
+  themeColor: "#f7f6f3",
 };
-
-/**
- * Applied before first paint so a user who chose a theme never sees the other
- * one flash first.
- */
-const THEME_SCRIPT = `
-(function () {
-  try {
-    var stored = localStorage.getItem('auralis-theme');
-    if (stored === 'dark' || stored === 'light') {
-      document.documentElement.setAttribute('data-theme', stored);
-    }
-  } catch (e) {}
-})();
-`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-      </head>
+    <html lang="en-GB">
       <body>{children}</body>
     </html>
   );

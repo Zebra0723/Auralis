@@ -150,7 +150,7 @@ export default async function OverviewPage() {
                     {descriptor.category}
                   </div>
                 </div>
-                <span className="text-[13px]" style={{ color: "var(--signal)" }}>Connect</span>
+                <span className="text-[13px]" style={{ color: "var(--accent)" }}>Connect</span>
               </Link>
             ))}
           </div>

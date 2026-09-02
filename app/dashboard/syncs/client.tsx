@@ -539,12 +539,12 @@ function SyncBuilder({
                       type="button"
                       className="badge"
                       style={{
-                        background: on ? "var(--signal-soft)" : "var(--raised)",
-                        color: on ? "var(--signal)" : "var(--ink-soft)",
+                        background: on ? "var(--accent-soft)" : "var(--raised)",
+                        color: on ? "var(--accent)" : "var(--ink-soft)",
                         height: 28,
                         paddingInline: 11,
                         cursor: "pointer",
-                        border: `1px solid ${on ? "var(--signal)" : "transparent"}`,
+                        border: `1px solid ${on ? "var(--accent)" : "transparent"}`,
                       }}
                       onClick={() =>
                         setSelected((current) =>

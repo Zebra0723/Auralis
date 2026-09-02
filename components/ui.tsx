@@ -55,7 +55,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animation: "a-toast-in 0.3s var(--ease-out-quint) both",
               borderColor:
                 toast.tone === "error" ? "var(--danger)"
-                : toast.tone === "success" ? "var(--signal)"
+                : toast.tone === "success" ? "var(--accent)"
                 : "var(--line)",
             }}
           >
@@ -64,7 +64,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               style={{
                 background:
                   toast.tone === "error" ? "var(--danger)"
-                  : toast.tone === "success" ? "var(--signal)"
+                  : toast.tone === "success" ? "var(--accent)"
                   : "var(--ink-faint)",
               }}
             />

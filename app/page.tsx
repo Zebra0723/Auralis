@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ConnectionVisual } from "@/components/connection-visual";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { allDescriptors, connectableState } from "@/lib/integrations/registry";
 import { getSession } from "@/lib/auth";
 
@@ -52,7 +51,6 @@ function SiteNav({ signedIn }: { signedIn: boolean }) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           {signedIn ? (
             <Link href="/dashboard" className="btn btn-primary btn-sm">Open dashboard</Link>
           ) : (
@@ -72,7 +70,7 @@ function Wordmark() {
     <span className="flex items-center gap-2.5">
       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
         <rect x="0.75" y="0.75" width="18.5" height="18.5" rx="5.5" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
-        <circle cx="10" cy="10" r="3" fill="var(--signal)" />
+        <circle cx="10" cy="10" r="3" fill="var(--accent)" />
       </svg>
       <span className="title text-[16.5px]" style={{ color: "var(--ink)" }}>Auralis</span>
     </span>
@@ -83,33 +81,52 @@ function Wordmark() {
 
 function Hero() {
   return (
-    <section className="mx-auto max-w-[1140px] px-6 pt-20 pb-16 md:pt-28 md:pb-24">
-      <div className="max-w-[760px]">
-        <p className="eyebrow rise">Account synchronization infrastructure</p>
-        <h1
-          className="display mt-5 text-[clamp(2.8rem,8vw,5.2rem)] rise"
-          style={{ animationDelay: "60ms" }}
-        >
-          Everything,
-          <br />
-          connected.
-        </h1>
-        <p
-          className="measure mt-7 text-[17px] leading-[1.65] rise"
-          style={{ color: "var(--ink-soft)", animationDelay: "140ms" }}
-        >
-          Connect the services you use. Keep the information that matters synchronized.
-          Change something once and Auralis works out which of your accounts support
-          that field, then updates them for you.
-        </p>
-        <div className="mt-9 flex flex-wrap items-center gap-3 rise" style={{ animationDelay: "220ms" }}>
-          <Link href="/signup" className="btn btn-primary">Connect your first service</Link>
-          <a href="#how" className="btn btn-secondary">See how it works</a>
-        </div>
-      </div>
+    <section className="border-b" style={{ borderColor: "var(--line)" }}>
+      <div className="mx-auto max-w-[1160px] px-6 py-16 md:py-24">
+        {/* Two columns so the concept is visible in the same glance as the
+            claim, rather than half the fold being empty. */}
+        <div className="grid gap-12 lg:gap-16 lg:grid-cols-[1fr_minmax(0,520px)] lg:items-center">
+          <div>
+            <p className="eyebrow rise">Account synchronization infrastructure</p>
+            <h1
+              className="display mt-6 text-[clamp(2.6rem,6vw,4.4rem)] rise"
+              style={{ animationDelay: "60ms" }}
+            >
+              Everything,
+              <br />
+              connected.
+            </h1>
+            <p
+              className="mt-6 text-[16px] leading-[1.6] max-w-[46ch] rise"
+              style={{ color: "var(--ink-soft)", animationDelay: "120ms" }}
+            >
+              Connect the services you use. Keep the information that matters
+              synchronized. Change something once and Auralis works out which of
+              your accounts support that field, then updates them for you.
+            </p>
+            <div
+              className="mt-8 flex flex-wrap items-center gap-2.5 rise"
+              style={{ animationDelay: "180ms" }}
+            >
+              <Link href="/signup" className="btn btn-primary">
+                Connect your first service
+              </Link>
+              <a href="#how" className="btn btn-secondary">
+                See how it works
+              </a>
+            </div>
+            <p
+              className="mt-6 text-[13px] rise"
+              style={{ color: "var(--ink-faint)", animationDelay: "240ms" }}
+            >
+              No password for any connected service ever reaches us.
+            </p>
+          </div>
 
-      <div className="mt-16 md:mt-20 rise" style={{ animationDelay: "300ms" }}>
-        <ConnectionVisual />
+          <div className="rise" style={{ animationDelay: "260ms" }}>
+            <ConnectionVisual />
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -137,7 +154,7 @@ function Problem() {
     <section className="border-t" style={{ borderColor: "var(--line-soft)" }}>
       <div className="mx-auto max-w-[1140px] px-6 py-20 md:py-28">
         <p className="eyebrow">The problem</p>
-        <h2 className="title mt-4 text-[clamp(1.9rem,4vw,2.9rem)] max-w-[19ch]">
+        <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.75rem)] max-w-[19ch]">
           Your information lives in thirty places and agrees in none of them.
         </h2>
 
@@ -184,7 +201,7 @@ function HowItWorks() {
     <section id="how" className="border-t" style={{ borderColor: "var(--line-soft)", background: "var(--raised)" }}>
       <div className="mx-auto max-w-[1140px] px-6 py-20 md:py-28">
         <p className="eyebrow">How Auralis works</p>
-        <h2 className="title mt-4 text-[clamp(1.9rem,4vw,2.9rem)] max-w-[17ch]">
+        <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.75rem)] max-w-[17ch]">
           Set it up once. Then forget it exists.
         </h2>
 
@@ -193,7 +210,7 @@ function HowItWorks() {
             <li key={step.title} className="card card-pad" style={{ background: "var(--surface)" }}>
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-medium mb-5"
-                style={{ background: "var(--signal-soft)", color: "var(--signal)" }}
+                style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
               >
                 {i + 1}
               </div>
@@ -226,7 +243,7 @@ function SupportedServices({
     <section id="services" className="border-t" style={{ borderColor: "var(--line-soft)" }}>
       <div className="mx-auto max-w-[1140px] px-6 py-20 md:py-28">
         <p className="eyebrow">Supported services</p>
-        <h2 className="title mt-4 text-[clamp(1.9rem,4vw,2.9rem)] max-w-[20ch]">
+        <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.75rem)] max-w-[20ch]">
           Every integration is built the same way.
         </h2>
         <p className="measure mt-5 text-[15px]" style={{ color: "var(--ink-soft)" }}>
@@ -305,7 +322,7 @@ function AutomationExamples() {
     <section className="border-t" style={{ borderColor: "var(--line-soft)", background: "var(--raised)" }}>
       <div className="mx-auto max-w-[1140px] px-6 py-20 md:py-28">
         <p className="eyebrow">Automation examples</p>
-        <h2 className="title mt-4 text-[clamp(1.9rem,4vw,2.9rem)] max-w-[16ch]">
+        <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.75rem)] max-w-[16ch]">
           Rules you can read out loud.
         </h2>
 
@@ -318,7 +335,7 @@ function AutomationExamples() {
               </div>
               <div className="my-3 ml-[50px] h-4 border-l" style={{ borderColor: "var(--line)" }} />
               <div className="flex items-baseline gap-3">
-                <span className="eyebrow shrink-0" style={{ width: 38, color: "var(--signal)" }}>Then</span>
+                <span className="eyebrow shrink-0" style={{ width: 38, color: "var(--accent)" }}>Then</span>
                 <span className="text-[14.5px]">{ex.then}</span>
               </div>
             </div>
@@ -355,14 +372,14 @@ function Security() {
     <section id="security" className="border-t" style={{ borderColor: "var(--line-soft)" }}>
       <div className="mx-auto max-w-[1140px] px-6 py-20 md:py-28">
         <p className="eyebrow">Security and privacy</p>
-        <h2 className="title mt-4 text-[clamp(1.9rem,4vw,2.9rem)] max-w-[18ch]">
+        <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.75rem)] max-w-[18ch]">
           Handling your accounts is the entire responsibility.
         </h2>
 
         <div className="mt-14 grid gap-x-12 gap-y-10 md:grid-cols-2">
           {points.map((p) => (
             <div key={p.title} className="flex gap-4">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--signal)" strokeWidth="1.8" className="mt-0.5 shrink-0" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" className="mt-0.5 shrink-0" aria-hidden="true">
                 <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div>
@@ -416,7 +433,7 @@ function Pricing() {
     <section id="pricing" className="border-t" style={{ borderColor: "var(--line-soft)", background: "var(--raised)" }}>
       <div className="mx-auto max-w-[1140px] px-6 py-20 md:py-28">
         <p className="eyebrow">Pricing</p>
-        <h2 className="title mt-4 text-[clamp(1.9rem,4vw,2.9rem)]">Priced by how much you connect.</h2>
+        <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.75rem)]">Priced by how much you connect.</h2>
 
         <div className="mt-14 grid gap-4 lg:grid-cols-3">
           {TIERS.map((tier) => (
@@ -425,7 +442,7 @@ function Pricing() {
               className="card flex flex-col p-7"
               style={{
                 background: "var(--surface)",
-                borderColor: tier.featured ? "var(--signal)" : "var(--line)",
+                borderColor: tier.featured ? "var(--accent)" : "var(--line)",
                 boxShadow: tier.featured ? "var(--shadow-card)" : "none",
               }}
             >
@@ -442,7 +459,7 @@ function Pricing() {
               <ul className="mt-7 flex flex-col gap-2.5 list-none p-0 flex-1">
                 {tier.features.map((f) => (
                   <li key={f} className="flex gap-2.5 text-[14px]">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--signal)" strokeWidth="2.2" className="mt-1 shrink-0" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" className="mt-1 shrink-0" aria-hidden="true">
                       <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <span style={{ color: "var(--ink-soft)" }}>{f}</span>
@@ -503,7 +520,7 @@ function Faq() {
     <section className="border-t" style={{ borderColor: "var(--line-soft)" }}>
       <div className="mx-auto max-w-[1140px] px-6 py-20 md:py-28">
         <p className="eyebrow">Questions</p>
-        <h2 className="title mt-4 text-[clamp(1.9rem,4vw,2.9rem)]">Answered plainly.</h2>
+        <h2 className="display mt-5 text-[clamp(1.9rem,3.6vw,2.75rem)]">Answered plainly.</h2>
 
         <div className="mt-12 max-w-[760px]">
           {FAQS.map((item) => (

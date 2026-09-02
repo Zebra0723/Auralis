@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { signOutAction } from "../(auth)/actions";
 
 interface NavItem {
@@ -57,7 +56,7 @@ export function DashboardChrome({
           <Link href="/dashboard" className="flex items-center gap-2.5 no-underline">
             <svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true">
               <rect x="0.75" y="0.75" width="18.5" height="18.5" rx="5.5" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
-              <circle cx="10" cy="10" r="3" fill="var(--signal)" />
+              <circle cx="10" cy="10" r="3" fill="var(--accent)" />
             </svg>
             <span className="title text-[15.5px]" style={{ color: "var(--ink)" }}>Auralis</span>
           </Link>
@@ -87,7 +86,6 @@ export function DashboardChrome({
                 Sign out
               </button>
             </form>
-            <ThemeToggle />
           </div>
         </div>
       </aside>
@@ -105,12 +103,11 @@ export function DashboardChrome({
           <Link href="/dashboard" className="flex items-center gap-2 no-underline">
             <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
               <rect x="0.75" y="0.75" width="18.5" height="18.5" rx="5.5" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
-              <circle cx="10" cy="10" r="3" fill="var(--signal)" />
+              <circle cx="10" cy="10" r="3" fill="var(--accent)" />
             </svg>
             <span className="title text-[15px]">Auralis</span>
           </Link>
           <div className="flex items-center gap-1">
-            <ThemeToggle />
             <button
               type="button"
               className="btn btn-ghost btn-sm"
@@ -162,7 +159,7 @@ export function DashboardChrome({
               key={item.href}
               href={item.href}
               className="flex-1 flex flex-col items-center gap-1 py-2.5 no-underline relative"
-              style={{ color: active ? "var(--signal)" : "var(--ink-faint)" }}
+              style={{ color: active ? "var(--accent)" : "var(--ink-faint)" }}
               aria-current={active ? "page" : undefined}
             >
               {item.icon}
@@ -202,7 +199,7 @@ function SidebarLink({
       }}
       aria-current={active ? "page" : undefined}
     >
-      <span style={{ color: active ? "var(--signal)" : "var(--ink-faint)" }}>{item.icon}</span>
+      <span style={{ color: active ? "var(--accent)" : "var(--ink-faint)" }}>{item.icon}</span>
       <span className="flex-1">{item.label}</span>
       {badge > 0 && (
         <span

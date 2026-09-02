@@ -67,7 +67,7 @@ export function StatTile({
         style={{
           color:
             tone === "amber" ? "var(--amber)"
-            : tone === "signal" ? "var(--signal)"
+            : tone === "signal" ? "var(--accent)"
             : "var(--ink)",
         }}
       >
@@ -83,7 +83,7 @@ export function StatTile({
 }
 
 const LEVEL_STYLE: Record<string, { dot: string; label: string }> = {
-  SUCCESS: { dot: "var(--signal)", label: "Synced" },
+  SUCCESS: { dot: "var(--accent)", label: "Synced" },
   INFO: { dot: "var(--ink-faint)", label: "Info" },
   WARNING: { dot: "var(--amber)", label: "Warning" },
   ERROR: { dot: "var(--danger)", label: "Failed" },
