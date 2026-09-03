@@ -203,18 +203,37 @@ succeed with none set. They are needed at runtime.
 Vercel does not include a database. Neon and Supabase both have a free tier that
 works; use their pooled connection string for `DATABASE_URL`.
 
-### Migrations
+### Setting up the database
 
-Run once against the production database, from your machine:
+Two ways. Both do the same thing.
+
+**Supabase, or any hosted Postgres with a web SQL editor — no CLI needed.**
+
+Open the SQL Editor, paste the whole of `prisma/sql/setup.sql`, press Run. That
+one file creates every table, index and foreign key and inserts the three plan
+rows. It is guarded throughout, so running it twice is a no-op rather than an
+error.
+
+In Supabase, take the connection string from **Project Settings → Database**:
+
+- `DATABASE_URL` — the **Transaction pooler** string (port `6543`). This is what
+  the app should use on serverless, where connections are short-lived and
+  numerous.
+- `DIRECT_URL` — the **Direct connection** string (port `5432`). Only needed if
+  you later run `prisma migrate` from a terminal; a transaction pooler cannot
+  run schema changes.
+
+**Or with the Prisma CLI**, from a terminal:
 
 ```bash
-DATABASE_URL="<your direct, unpooled url>" npx prisma migrate deploy
-DATABASE_URL="<your direct, unpooled url>" npm run db:seed
+DATABASE_URL="<direct connection, port 5432>" npx prisma migrate deploy
+DATABASE_URL="<direct connection, port 5432>" npm run db:seed
 ```
 
-Deliberately not part of the build: a build that mutates the production schema
-on every preview deploy is a bad afternoon. Use the **direct** connection string
-here, not the pooled one — a transaction pooler cannot run migrations.
+Either way this is a one-off. You only repeat it when the schema changes.
+
+Migrations are deliberately not part of the build: a build that mutates the
+production schema on every preview deploy is a bad afternoon.
 
 ### Making syncs actually run
 
