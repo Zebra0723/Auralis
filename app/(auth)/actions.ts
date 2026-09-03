@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { authenticate, createSession, destroySession, registerUser } from "@/lib/auth";
+import { LegacyPasswordError } from "@/lib/crypto";
 import { db } from "@/lib/db";
 
 export type AuthFormState = { error?: string } | undefined;
@@ -50,6 +51,13 @@ export async function signInAction(
  * page, which tells them nothing and looks broken.
  */
 function describeInfrastructureFailure(error: unknown): string {
+  // An account created before password hashing moved to WebCrypto cannot be
+  // verified on a runtime without Node's scrypt. Say so plainly rather than
+  // reporting it as a server fault.
+  if (error instanceof LegacyPasswordError) {
+    return "This account was created before a security update and needs its password reset. Contact support to restore access.";
+  }
+
   const message = error instanceof Error ? error.message : String(error);
   const code =
     error && typeof error === "object" && "code" in error

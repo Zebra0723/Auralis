@@ -83,9 +83,13 @@ export async function runSync(
       getCheckpoint(canonical.id, config.targetConnectionId, field),
     ]);
 
-    const sourceMoved = sourceCheckpoint !== null && sourceCheckpoint !== valueHash(sourceValue);
-    const targetMoved = targetCheckpoint !== null && targetCheckpoint !== valueHash(targetValue);
-    const inAgreement = valueHash(sourceValue) === valueHash(targetValue);
+    const [sourceHash, targetHash] = await Promise.all([
+      valueHash(sourceValue),
+      valueHash(targetValue),
+    ]);
+    const sourceMoved = sourceCheckpoint !== null && sourceCheckpoint !== sourceHash;
+    const targetMoved = targetCheckpoint !== null && targetCheckpoint !== targetHash;
+    const inAgreement = sourceHash === targetHash;
 
     if (inAgreement) {
       // Already consistent. Record checkpoints so future divergence is detectable.
@@ -249,7 +253,7 @@ async function setCheckpoint(
   field: string,
   value: string | null,
 ): Promise<void> {
-  const data = { valueHash: valueHash(value), value, observedAt: new Date() };
+  const data = { valueHash: await valueHash(value), value, observedAt: new Date() };
   await db.fieldCheckpoint.upsert({
     where: { recordId_connectionId_field: { recordId, connectionId, field } },
     create: { recordId, connectionId, field, ...data },

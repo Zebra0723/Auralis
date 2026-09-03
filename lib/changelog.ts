@@ -18,6 +18,14 @@ export interface Release {
 /** Newest first. */
 const RELEASES: Release[] = [
   {
+    summary: "Auralis no longer depends on any one hosting platform",
+    date: "2026-09-03",
+    notes: [
+      "Encryption and password hashing moved to WebCrypto, which every modern runtime has. Auralis can now run on Node, Cloudflare Workers or Deno without changing a line.",
+      "Passwords use PBKDF2 with 600,000 iterations, and the iteration count is stored with each hash so it can be raised later without locking anyone out.",
+    ],
+  },
+  {
     summary: "Connection strings with awkward passwords now just work",
     date: "2026-09-03",
     notes: [
