@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "auralis",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-01",
+
+  // nodejs_compat gives Workers the Node built-ins Next.js and Prisma expect.
+  // Auralis' own code no longer needs it — all cryptography moved to WebCrypto —
+  // but the framework and driver still do.
+  "compatibility_flags": ["nodejs_compat"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  // Workers cannot open an ordinary TCP connection to Postgres. Hyperdrive is
+  // the bridge, and it pools on Cloudflare's side. Replace the id with the one
+  // from your own Hyperdrive config.
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "REPLACE_WITH_YOUR_HYPERDRIVE_ID",
+      "localConnectionString": "postgresql://postgres@localhost:5432/auralis"
+    }
+  ],
+
+  // Every minute, which is what the sync queue actually wants. Vercel's Hobby
+  // tier caps this at once a day.
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

@@ -101,12 +101,40 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 const datasourceUrl = normaliseDatabaseUrl(process.env.DATABASE_URL);
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+/**
+ * Cloudflare Workers cannot use Prisma's native query engine and cannot open an
+ * ordinary TCP connection to Postgres. Hyperdrive supplies a connection string
+ * that works from a Worker, and the pg driver adapter is how Prisma talks over
+ * it.
+ *
+ * Node keeps the ordinary path. This is a branch rather than a replacement so
+ * that one deployment target cannot break the other, and so local development
+ * and Vercel behave exactly as before.
+ */
+function createClient(): PrismaClient {
+  const hyperdrive = (
+    globalThis as unknown as { HYPERDRIVE?: { connectionString?: string } }
+  ).HYPERDRIVE;
+
+  const log: ("warn" | "error")[] =
+    process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"];
+
+  if (hyperdrive?.connectionString) {
+    // Loaded lazily: importing pg on Node would pull a driver the ordinary path
+    // does not need, and the adapter only exists on the Workers build.
+    const { PrismaPg } = require("@prisma/adapter-pg") as typeof import("@prisma/adapter-pg");
+    const adapter = new PrismaPg({ connectionString: hyperdrive.connectionString });
+    console.info("[db] using Hyperdrive via the pg driver adapter");
+    return new PrismaClient({ adapter, log });
+  }
+
+  return new PrismaClient({
     ...(datasourceUrl ? { datasourceUrl } : {}),
-    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+    log,
   });
+}
+
+export const db = globalForPrisma.prisma ?? createClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
 
