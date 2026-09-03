@@ -258,6 +258,31 @@ is almost certainly too slow to be useful:
 Without one of these, connections and syncs can be configured but nothing will
 ever sync.
 
+## Versioning
+
+Auralis has a single incrementing version number. There is no semver, no tags to
+remember, and no second constant to bump.
+
+`lib/changelog.ts` is the source of truth. To ship a change, add one entry to the
+**top** of the array:
+
+```ts
+{
+  summary: "What changed, in one line",
+  date: "2026-09-04",
+  notes: ["Optional detail, one string per point"],
+}
+```
+
+The version is the array length, so it goes up by one automatically and can
+never disagree with the history. It appears in three places:
+
+- the site footer, alongside the newest change, linking to the full list
+- `/changelog`, the public history
+- **Settings** in the dashboard, where an operator looks when something is off
+
+---
+
 ## Architecture
 
 ### Hub and spoke

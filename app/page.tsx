@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ConnectionVisual } from "@/components/connection-visual";
 import { AuralisWordmark } from "@/components/logo";
+import { latestRelease, VERSION_LABEL } from "@/lib/changelog";
 import { allDescriptors, connectableState } from "@/lib/integrations/registry";
 import { getSession } from "@/lib/auth";
 
@@ -565,13 +566,27 @@ function FinalCta() {
 function SiteFooter() {
   return (
     <footer className="border-t" style={{ borderColor: "var(--line-soft)" }}>
-      <div className="mx-auto max-w-[1140px] px-6 py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-        <div className="flex items-center gap-3">
-          <Wordmark />
+      <div className="mx-auto max-w-[1160px] px-6 py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+        <Wordmark />
+
+        <div className="flex flex-col sm:items-end gap-1.5">
+          <Link
+            href="/changelog"
+            className="flex items-center gap-2 no-underline text-[12.5px]"
+            style={{ color: "var(--ink-soft)" }}
+          >
+            <span
+              className="badge badge-neutral"
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {VERSION_LABEL}
+            </span>
+            <span className="link-underline">{latestRelease.summary}</span>
+          </Link>
+          <p className="text-[12.5px]" style={{ color: "var(--ink-faint)" }}>
+            Auralis is a DailyOS company. &copy; {new Date().getFullYear()}
+          </p>
         </div>
-        <p className="text-[12.5px]" style={{ color: "var(--ink-faint)" }}>
-          Auralis is a DailyOS company. © {new Date().getFullYear()}
-        </p>
       </div>
     </footer>
   );

@@ -6,6 +6,7 @@ import { CANONICAL_PROFILE_FIELDS } from "@/lib/integrations/fields";
 import { relativeTime, ProviderMark } from "@/components/ui";
 import { PageHeader, Section } from "../components";
 import { VaultEditor } from "./vault-editor";
+import { latestRelease, releases, VERSION_LABEL } from "@/lib/changelog";
 
 export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
@@ -150,6 +151,30 @@ export default async function SettingsPage() {
           >
             Billing is not enabled on this deployment, so plans cannot be changed here yet.
           </div>
+        </div>
+      </Section>
+
+      <Section title="Version">
+        <div className="card card-pad">
+          <div className="flex flex-wrap items-center gap-3">
+            <span
+              className="badge badge-signal"
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {VERSION_LABEL}
+            </span>
+            <span className="text-[14px] font-medium">{latestRelease.summary}</span>
+          </div>
+          <p className="mt-2 text-[13px]" style={{ color: "var(--ink-faint)" }}>
+            Released {latestRelease.date}. {releases.length} versions so far.
+          </p>
+          <a
+            href="/changelog"
+            className="link-underline text-[13.5px] inline-block mt-3"
+            style={{ color: "var(--accent)" }}
+          >
+            See everything that has changed
+          </a>
         </div>
       </Section>
 
