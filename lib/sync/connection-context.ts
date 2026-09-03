@@ -16,8 +16,10 @@ export async function persistTokens(
   token: TokenSet,
 ): Promise<void> {
   const data = {
-    accessTokenCipher: encryptSecret(token.accessToken),
-    refreshTokenCipher: token.refreshToken ? encryptSecret(token.refreshToken) : null,
+    accessTokenCipher: await encryptSecret(token.accessToken),
+    refreshTokenCipher: token.refreshToken
+      ? await encryptSecret(token.refreshToken)
+      : null,
     tokenType: token.tokenType ?? "Bearer",
     expiresAt: token.expiresAt ?? null,
   };
@@ -48,9 +50,9 @@ export async function getConnectionContext(
     });
   }
 
-  let accessToken = decryptSecret(credential.accessTokenCipher);
+  let accessToken = await decryptSecret(credential.accessTokenCipher);
   let refreshToken = credential.refreshTokenCipher
-    ? decryptSecret(credential.refreshTokenCipher)
+    ? await decryptSecret(credential.refreshTokenCipher)
     : null;
 
   const expiringSoon =

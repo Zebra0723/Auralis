@@ -61,6 +61,7 @@ export async function POST(
         ? conflict.sourceValue
         : conflict.targetValue;
 
+  const winningHash = await valueHash(winningValue);
   const sync = conflict.syncConfig;
   const recordType = sync.recordType as RecordType;
 
@@ -72,7 +73,7 @@ export async function POST(
     ];
 
     for (const side of sides) {
-      if (valueHash(side.current) === valueHash(winningValue)) continue;
+      if ((await valueHash(side.current)) === winningHash) continue;
 
       const integration = getIntegration(side.connection.provider);
       const writable = integration.descriptor.capabilities.fields[recordType]?.find(
@@ -104,11 +105,11 @@ export async function POST(
           recordId: conflict.recordId,
           connectionId: side.connection.id,
           field: conflict.field,
-          valueHash: valueHash(winningValue),
+          valueHash: winningHash,
           value: winningValue,
         },
         update: {
-          valueHash: valueHash(winningValue),
+          valueHash: winningHash,
           value: winningValue,
           observedAt: new Date(),
         },

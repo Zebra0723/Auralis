@@ -28,7 +28,7 @@ export async function createSession(userId: string): Promise<string> {
   await db.session.create({
     data: {
       userId,
-      tokenHash: sha256(token),
+      tokenHash: await sha256(token),
       userAgent: hdrs.get("user-agent")?.slice(0, 300) ?? null,
       ip: hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
       expiresAt: new Date(Date.now() + SESSION_TTL_DAYS * 86400_000),
@@ -49,7 +49,7 @@ export async function destroySession(): Promise<void> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (token) {
-    await db.session.deleteMany({ where: { tokenHash: sha256(token) } });
+    await db.session.deleteMany({ where: { tokenHash: await sha256(token) } });
   }
   store.delete(SESSION_COOKIE);
 }
@@ -61,7 +61,7 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
   if (!token) return null;
 
   const session = await db.session.findUnique({
-    where: { tokenHash: sha256(token) },
+    where: { tokenHash: await sha256(token) },
     include: {
       user: {
         include: {
@@ -169,7 +169,13 @@ export async function authenticate(email: string, password: string) {
   // Hash even when the user is absent so response time does not reveal
   // whether an address is registered.
   if (!user) {
-    await verifyPassword(password, "scrypt$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAA");
+    // A real-shaped hash, so the work done matches the found-user path. It must
+    // use the current scheme: a legacy hash would now throw and leak the fact
+    // that no such account exists.
+    await verifyPassword(
+      password,
+      "pbkdf2$600000$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    );
     return { ok: false as const, error: "Incorrect email or password." };
   }
 
