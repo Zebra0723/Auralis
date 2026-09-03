@@ -86,7 +86,7 @@ export default async function SettingsPage() {
               return (
                 <div key={connection.id} className="p-4">
                   <div className="flex items-center gap-3">
-                    {descriptor && <ProviderMark mark={descriptor.mark} accent={descriptor.accent} size={30} />}
+                    {descriptor && <ProviderMark mark={descriptor.mark} accent={descriptor.accent} size={30} providerKey={descriptor.key} />}
                     <div className="min-w-0 flex-1">
                       <div className="text-[14px] font-medium">{connection.displayName}</div>
                       <div className="text-[12.5px]" style={{ color: "var(--ink-faint)" }}>

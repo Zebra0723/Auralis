@@ -177,7 +177,7 @@ export function ConnectionsClient({
               const entry = catalogue.find((c) => c.key === connection.provider);
               return (
                 <div key={connection.id} className="card p-4 flex flex-wrap items-center gap-3">
-                  {entry && <ProviderMark mark={entry.mark} accent={entry.accent} />}
+                  {entry && <ProviderMark mark={entry.mark} accent={entry.accent} providerKey={entry.key} />}
                   <div className="min-w-[160px] flex-1">
                     <div className="text-[14.5px] font-medium">{connection.displayName}</div>
                     <div className="text-[12.5px] mt-0.5" style={{ color: "var(--ink-faint)" }}>
@@ -234,7 +234,7 @@ export function ConnectionsClient({
             <div key={entry.key} className="card card-pad flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <ProviderMark mark={entry.mark} accent={entry.accent} />
+                  <ProviderMark mark={entry.mark} accent={entry.accent} providerKey={entry.key} />
                   <div className="min-w-0">
                     <div className="text-[14.5px] font-medium truncate">{entry.name}</div>
                     <div className="text-[12px]" style={{ color: "var(--ink-faint)" }}>
@@ -358,7 +358,7 @@ function TokenDialog({
         aria-label={`Connect ${entry.name}`}
       >
         <div className="flex items-center gap-3">
-          <ProviderMark mark={entry.mark} accent={entry.accent} />
+          <ProviderMark mark={entry.mark} accent={entry.accent} providerKey={entry.key} />
           <h2 className="title text-[17px]">Connect {entry.name}</h2>
         </div>
 

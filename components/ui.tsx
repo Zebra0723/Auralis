@@ -1,5 +1,6 @@
 "use client";
 
+import { hasServiceLogo, ServiceLogo } from "@/components/service-logos";
 import {
   createContext,
   useCallback,
@@ -212,24 +213,34 @@ export function ProviderMark({
   mark,
   accent,
   size = 32,
+  providerKey,
 }: {
   mark: string;
   accent: string;
   size?: number;
+  providerKey?: string;
 }) {
+  const hasLogo = providerKey ? hasServiceLogo(providerKey) : false;
+
   return (
     <span
       className="rounded-[7px] flex items-center justify-center font-semibold shrink-0"
       style={{
         width: size,
         height: size,
-        background: `${accent}14`,
+        // A real logo sits on a neutral chip; tinting it with the provider's
+        // own colour would fight the logo's own palette.
+        background: hasLogo ? "var(--raised)" : `${accent}14`,
         color: accent,
         fontSize: size * 0.38,
       }}
       aria-hidden="true"
     >
-      {mark}
+      {hasLogo && providerKey ? (
+        <ServiceLogo providerKey={providerKey} size={Math.round(size * 0.6)} />
+      ) : (
+        mark
+      )}
     </span>
   );
 }

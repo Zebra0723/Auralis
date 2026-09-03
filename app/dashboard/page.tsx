@@ -74,7 +74,7 @@ export default async function OverviewPage() {
                 className="card flex flex-wrap items-center gap-3 p-4"
                 style={{ borderColor: "var(--amber)", background: "var(--amber-soft)" }}
               >
-                {descriptor && <ProviderMark mark={descriptor.mark} accent={descriptor.accent} size={30} />}
+                {descriptor && <ProviderMark mark={descriptor.mark} accent={descriptor.accent} size={30} providerKey={descriptor.key} />}
                 <div className="flex-1 min-w-[200px]">
                   <div className="text-[14px] font-medium">{connection.displayName} needs reconnecting</div>
                   <div className="text-[13px] mt-0.5" style={{ color: "var(--ink-soft)" }}>
@@ -141,7 +141,7 @@ export default async function OverviewPage() {
                 href="/dashboard/connections"
                 className="card card-pad flex items-center gap-3 no-underline transition-colors duration-150 hover:border-[var(--ink-faint)]"
               >
-                <ProviderMark mark={descriptor.mark} accent={descriptor.accent} />
+                <ProviderMark mark={descriptor.mark} accent={descriptor.accent} providerKey={descriptor.key} />
                 <div className="min-w-0 flex-1">
                   <div className="text-[14px] font-medium" style={{ color: "var(--ink)" }}>
                     {descriptor.name}
@@ -164,7 +164,7 @@ export default async function OverviewPage() {
               const descriptor = tryGetIntegration(connection.provider)?.descriptor;
               return (
                 <div key={connection.id} className="flex items-center gap-3 p-4">
-                  {descriptor && <ProviderMark mark={descriptor.mark} accent={descriptor.accent} size={30} />}
+                  {descriptor && <ProviderMark mark={descriptor.mark} accent={descriptor.accent} size={30} providerKey={descriptor.key} />}
                   <div className="min-w-0 flex-1">
                     <div className="text-[14px] font-medium truncate">{connection.displayName}</div>
                     <div className="text-[12.5px] truncate" style={{ color: "var(--ink-faint)" }}>

@@ -79,6 +79,14 @@ function describeInfrastructureFailure(error: unknown): string {
   if (/P1010|permission denied|password authentication failed|28P01/i.test(message)) {
     return "Auralis was refused by the database. Check the username and password in DATABASE_URL.";
   }
+  // Supabase's copy button yields a template containing [YOUR-PASSWORD]. Pasting
+  // it unchanged is the most common setup mistake there is.
+  if (/\[YOUR-PASSWORD\]|invalid port number|must start with the protocol/i.test(message)) {
+    return "DATABASE_URL is not a valid connection string. If it still contains [YOUR-PASSWORD], replace that with the real password; if the password contains @ : / ? # or %, each must be percent-encoded.";
+  }
+  if (/P1013|the provided database string is invalid/i.test(message) || code === "P1013") {
+    return "DATABASE_URL could not be parsed. Check it for a missing password or unescaped special characters.";
+  }
 
   // Anything unrecognised still names the code, so it can be acted on rather
   // than guessed at.
