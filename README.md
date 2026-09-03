@@ -169,30 +169,75 @@ block a web request. Nothing syncs unless it is running.
 
 ## Deploying
 
-A GitHub Actions workflow (`.github/workflows/deploy.yml`) typechecks every push
-and deploys to Vercel — previews for pull requests, production for `main`.
+Deployment is handled by **Vercel's Git integration** — connect the repository
+in the Vercel dashboard and it builds and deploys on every push. There is no
+CLI step and no deploy token to manage.
 
-Repository secrets required:
+`.github/workflows/ci.yml` typechecks and builds each commit so a broken change
+shows up on the pull request rather than only in Vercel's build log. It does not
+deploy anything.
 
-- `VERCEL_TOKEN` — https://vercel.com/account/tokens
-- `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` — from `.vercel/project.json` after
-  running `vercel link`
+### Set up
 
-Runtime environment variables go in the **Vercel project's** environment
-settings, not in GitHub — `vercel pull` fetches them at build time.
+1. In Vercel, **Add New → Project**, import this repository.
+2. Framework preset is detected as Next.js. Leave the build settings alone —
+   `postinstall` runs `prisma generate`, which is what Vercel's cached
+   `node_modules` needs.
+3. Add the environment variables below under **Settings → Environment
+   Variables**, for Production and Preview.
+4. Deploy.
 
-### Two things Vercel cannot do for you
+The build itself requires **no** environment variables — it is verified to
+succeed with none set. They are needed at runtime.
 
-**Migrations.** Run `npx prisma migrate deploy` against the production database
-as a release step. It is deliberately not part of the build: a build that mutates
-the production schema on every preview deploy is a bad afternoon.
+### Environment variables in Vercel
 
-**The worker.** Vercel serverless functions are request-scoped, so the long-lived
-worker loop needs somewhere else — a small Railway/Render/Fly worker service
-running `npm run worker`, or a cron that invokes the queue drain on a schedule.
-**Without a worker running somewhere, nothing ever syncs.**
+| Variable | Needed for |
+|---|---|
+| `DATABASE_URL` | Everything past the marketing pages |
+| `AURALIS_ENCRYPTION_KEY` | Storing any connection. `openssl rand -base64 32` |
+| `NEXT_PUBLIC_APP_URL` | Your deployment's own URL, e.g. `https://auralis.vercel.app`. Must match the OAuth redirect URIs you register |
+| `CRON_SECRET` | Optional. Lets you trigger the queue drain by hand |
+| Provider client IDs and secrets | Only the services you want connectable |
 
----
+Vercel does not include a database. Neon and Supabase both have a free tier that
+works; use their pooled connection string for `DATABASE_URL`.
+
+### Migrations
+
+Run once against the production database, from your machine:
+
+```bash
+DATABASE_URL="<your direct, unpooled url>" npx prisma migrate deploy
+DATABASE_URL="<your direct, unpooled url>" npm run db:seed
+```
+
+Deliberately not part of the build: a build that mutates the production schema
+on every preview deploy is a bad afternoon. Use the **direct** connection string
+here, not the pooled one — a transaction pooler cannot run migrations.
+
+### Making syncs actually run
+
+Serverless functions are request-scoped, so the long-lived worker in
+`worker/index.ts` cannot run on Vercel. `/api/cron/drain` does one bounded pass
+of the queue instead, and `vercel.json` schedules it.
+
+**The scheduled cron ships as daily (`0 0 * * *`)**, because that is valid on
+every Vercel plan and a rejected cron schedule fails the whole deployment. Daily
+is almost certainly too slow to be useful:
+
+- **On Pro**, change the schedule in `vercel.json` to `* * * * *` for
+  once-a-minute syncing.
+- **On Hobby**, leave it daily and drive the endpoint from an external scheduler
+  instead — any cron service hitting
+  `https://<your-domain>/api/cron/drain` with an
+  `Authorization: Bearer $CRON_SECRET` header works.
+- **Or** run the real worker (`npm run worker`) on a small always-on host
+  (Railway, Render, Fly) pointed at the same database. This is the best option
+  if you want responsive syncing.
+
+Without one of these, connections and syncs can be configured but nothing will
+ever sync.
 
 ## Architecture
 
