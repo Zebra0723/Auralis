@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ConnectionVisual } from "@/components/connection-visual";
+import { AuralisWordmark } from "@/components/logo";
 import { allDescriptors, connectableState } from "@/lib/integrations/registry";
 import { getSession } from "@/lib/auth";
 
@@ -66,15 +67,7 @@ function SiteNav({ signedIn }: { signedIn: boolean }) {
 }
 
 function Wordmark() {
-  return (
-    <span className="flex items-center gap-2.5">
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-        <rect x="0.75" y="0.75" width="18.5" height="18.5" rx="5.5" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
-        <circle cx="10" cy="10" r="3" fill="var(--accent)" />
-      </svg>
-      <span className="title text-[16.5px]" style={{ color: "var(--ink)" }}>Auralis</span>
-    </span>
-  );
+  return <AuralisWordmark />;
 }
 
 /* ------------------------------------------------------------------- hero */

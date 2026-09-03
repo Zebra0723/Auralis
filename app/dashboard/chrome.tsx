@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { AuralisWordmark } from "@/components/logo";
 import { signOutAction } from "../(auth)/actions";
 
 interface NavItem {
@@ -54,11 +55,7 @@ export function DashboardChrome({
       >
         <div className="h-16 flex items-center px-5">
           <Link href="/dashboard" className="flex items-center gap-2.5 no-underline">
-            <svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true">
-              <rect x="0.75" y="0.75" width="18.5" height="18.5" rx="5.5" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
-              <circle cx="10" cy="10" r="3" fill="var(--accent)" />
-            </svg>
-            <span className="title text-[15.5px]" style={{ color: "var(--ink)" }}>Auralis</span>
+            <AuralisWordmark size={15.5} markSize={20} />
           </Link>
         </div>
 
@@ -101,11 +98,7 @@ export function DashboardChrome({
           }}
         >
           <Link href="/dashboard" className="flex items-center gap-2 no-underline">
-            <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-              <rect x="0.75" y="0.75" width="18.5" height="18.5" rx="5.5" fill="none" stroke="var(--ink)" strokeWidth="1.5" />
-              <circle cx="10" cy="10" r="3" fill="var(--accent)" />
-            </svg>
-            <span className="title text-[15px]">Auralis</span>
+            <AuralisWordmark size={15.5} markSize={20} />
           </Link>
           <div className="flex items-center gap-1">
             <button

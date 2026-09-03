@@ -46,22 +46,28 @@ export function ConnectionVisual() {
 
       <div className="p-4">
         <svg viewBox="0 0 520 290" className="w-full h-auto" role="presentation">
+          <defs>
+            <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="var(--brand-blue)" />
+              <stop offset="100%" stopColor="var(--brand-purple)" />
+            </linearGradient>
+          </defs>
           {SERVICES.map((node, i) => (
             <g key={node.label}>
               {/* Resting connector */}
               <path
                 d={`M 152 ${node.y + 15} C 205 ${node.y + 15}, 215 145, 244 145`}
-                stroke="var(--line)"
-                strokeWidth="1"
+                stroke="#c9d0e2"
+                strokeWidth="1.1"
                 fill="none"
               />
               {/* Travelling signal */}
               <path
                 d={`M 152 ${node.y + 15} C 205 ${node.y + 15}, 215 145, 244 145`}
-                stroke="var(--accent)"
-                strokeWidth="1.5"
+                stroke="url(#flow)"
+                strokeWidth="2"
                 fill="none"
-                strokeDasharray="4 160"
+                strokeDasharray="5 150"
                 style={{
                   animation: `a-dash ${5 + i * 0.9}s linear infinite`,
                   animationDelay: `${i * 0.5}s`,
@@ -75,16 +81,16 @@ export function ConnectionVisual() {
             <g key={field.label}>
               <path
                 d={`M 276 145 C 305 145, 315 ${field.y + 14}, 348 ${field.y + 14}`}
-                stroke="var(--line)"
-                strokeWidth="1"
+                stroke="#c9d0e2"
+                strokeWidth="1.1"
                 fill="none"
               />
               <path
                 d={`M 276 145 C 305 145, 315 ${field.y + 14}, 348 ${field.y + 14}`}
-                stroke="var(--accent)"
-                strokeWidth="1.5"
+                stroke="url(#flow)"
+                strokeWidth="2"
                 fill="none"
-                strokeDasharray="4 160"
+                strokeDasharray="5 150"
                 style={{
                   animation: `a-dash ${5.4 + i * 0.8}s linear infinite`,
                   animationDelay: `${0.9 + i * 0.45}s`,
@@ -105,7 +111,7 @@ export function ConnectionVisual() {
             stroke="var(--ink)"
             strokeWidth="1.25"
           />
-          <circle cx="260" cy="145" r="4" fill="var(--accent)" className="live-dot" />
+          <circle cx="260" cy="145" r="4" fill="url(#flow)" className="live-dot" />
         </svg>
       </div>
     </div>

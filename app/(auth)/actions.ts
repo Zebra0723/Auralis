@@ -51,15 +51,40 @@ export async function signInAction(
  */
 function describeInfrastructureFailure(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
-  console.error("[auth] infrastructure failure", error);
+  const code =
+    error && typeof error === "object" && "code" in error
+      ? String((error as { code: unknown }).code)
+      : "";
 
-  if (/ENOTFOUND|ECONNREFUSED|Can't reach database|P1001|P1000|P1017/i.test(message)) {
-    return "Auralis cannot reach its database right now. This is a problem on our side, not yours. Please try again shortly.";
+  // Log the code separately: it is the one piece an operator actually needs,
+  // and it is easy to lose inside a long stack trace in a hosting dashboard.
+  console.error(`[auth] infrastructure failure code=${code || "none"}`, error);
+
+  if (/ENOTFOUND|ECONNREFUSED|ETIMEDOUT|Can't reach database|P1001|P1000|P1017/i.test(message)) {
+    return "Auralis cannot reach its database. Check DATABASE_URL on this deployment.";
   }
-  if (/does not exist in the current database|P2021|P2022/i.test(message)) {
-    return "Auralis is not finished setting up. Database migrations have not been run on this deployment yet.";
+  if (/does not exist in the current database|P2021|P2022/i.test(message) || code === "P2021") {
+    return "Auralis is not finished setting up. The database has no tables yet — run the setup SQL.";
   }
-  return "Something went wrong on our side. Please try again shortly.";
+  // Prisma against a transaction pooler (Supabase port 6543, PgBouncer)
+  // re-uses prepared statement names across pooled connections unless the
+  // connection string says pgbouncer=true. It fails only once a real query
+  // runs, which is why it shows up at sign-up rather than at boot.
+  if (/prepared statement|42P05|26000|ConnectorError/i.test(message) || code === "42P05") {
+    return "Auralis cannot use this database connection. Add ?pgbouncer=true&connection_limit=1 to DATABASE_URL, or use the session pooler on port 5432.";
+  }
+  if (/P2024|Timed out fetching a new connection|too many clients/i.test(message) || code === "P2024") {
+    return "The database is not accepting more connections right now. Please try again in a moment.";
+  }
+  if (/P1010|permission denied|password authentication failed|28P01/i.test(message)) {
+    return "Auralis was refused by the database. Check the username and password in DATABASE_URL.";
+  }
+
+  // Anything unrecognised still names the code, so it can be acted on rather
+  // than guessed at.
+  return code
+    ? `Something went wrong on our side (${code}). Please try again shortly.`
+    : "Something went wrong on our side. Please try again shortly.";
 }
 
 export async function signUpAction(
