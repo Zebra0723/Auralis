@@ -21,16 +21,16 @@ import type {
  * Providers with no adapter yet. They are listed so the marketplace is honest
  * about the roadmap, and every operation on them refuses rather than pretending.
  */
-const notionDescriptor: ProviderDescriptor = {
-  key: "notion",
-  name: "Notion",
+const dailyosDescriptor: ProviderDescriptor = {
+  key: "dailyos",
+  name: "DailyOS",
   category: "Productivity",
-  blurb: "Sync people properties across Notion databases.",
+  blurb: "Keep your DailyOS profile in step with every other account you connect.",
   authMethod: "oauth2",
   status: "planned",
-  requiredEnv: ["NOTION_CLIENT_ID", "NOTION_CLIENT_SECRET"],
-  accent: "#191919",
-  mark: "N",
+  requiredEnv: ["DAILYOS_CLIENT_ID", "DAILYOS_CLIENT_SECRET"],
+  accent: "#2f6be4",
+  mark: "D",
   capabilities: {
     recordTypes: ["profile"],
     fields: { profile: fields(["displayName", "email", "avatarUrl"], []) },
@@ -92,7 +92,7 @@ const INTEGRATIONS: Integration[] = [
   trelloIntegration,
   asanaIntegration,
   discordIntegration,
-  definePlannedProvider(notionDescriptor),
+  definePlannedProvider(dailyosDescriptor),
   definePlannedProvider(linkedinDescriptor),
   definePlannedProvider(hubspotDescriptor),
 ];

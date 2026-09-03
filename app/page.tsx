@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ConnectionVisual } from "@/components/connection-visual";
 import { AuralisWordmark } from "@/components/logo";
+import { hasServiceLogo, ServiceLogo } from "@/components/service-logos";
 import { latestRelease, VERSION_LABEL } from "@/lib/changelog";
 import { allDescriptors, connectableState } from "@/lib/integrations/registry";
 import { getSession } from "@/lib/auth";
@@ -41,9 +42,12 @@ function SiteNav({ signedIn }: { signedIn: boolean }) {
       }}
     >
       <div className="mx-auto max-w-[1140px] px-6 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <Wordmark />
-        </Link>
+        <div className="flex items-center gap-5 min-w-0">
+          <Link href="/" className="no-underline">
+            <Wordmark />
+          </Link>
+          <ParentAttribution />
+        </div>
 
         <nav className="hidden md:flex items-center gap-7 text-[13.5px]" style={{ color: "var(--ink-soft)" }}>
           <a href="#how" className="hover:opacity-70 transition-opacity no-underline" style={{ color: "inherit" }}>How it works</a>
@@ -69,6 +73,41 @@ function SiteNav({ signedIn }: { signedIn: boolean }) {
 
 function Wordmark() {
   return <AuralisWordmark />;
+}
+
+/**
+ * Parent-company attribution. Auralis is its own brand, so this is deliberately
+ * quiet — small, uppercase, set apart by a rule — rather than competing with the
+ * Auralis wordmark beside it.
+ */
+function ParentAttribution() {
+  return (
+    <span
+      className="hidden lg:flex items-center gap-4 min-w-0"
+      style={{ color: "var(--ink-faint)" }}
+    >
+      <span
+        aria-hidden="true"
+        style={{ width: 1, height: 20, background: "var(--line)" }}
+      />
+      <span
+        className="whitespace-nowrap"
+        style={{ fontSize: 10.5, letterSpacing: "0.12em", fontWeight: 500 }}
+      >
+        AURALIS, A{" "}
+        <a
+          href="https://www.dailyos.uk"
+          target="_blank"
+          rel="noreferrer"
+          className="no-underline"
+          style={{ color: "var(--brand-ink)", fontWeight: 600 }}
+        >
+          DAILYOS
+        </a>{" "}
+        COMPANY
+      </span>
+    </span>
+  );
 }
 
 /* ------------------------------------------------------------------- hero */
@@ -253,12 +292,7 @@ function SupportedServices({
               <div key={d.key} className="card card-pad flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className="w-8 h-8 rounded-[7px] flex items-center justify-center text-[12px] font-semibold shrink-0"
-                      style={{ background: `${d.accent}14`, color: d.accent }}
-                    >
-                      {d.mark}
-                    </span>
+                    <ServiceChip providerKey={d.key} mark={d.mark} accent={d.accent} />
                     <div className="min-w-0">
                       <div className="title text-[14.5px] truncate">{d.name}</div>
                       <div className="text-[12px]" style={{ color: "var(--ink-faint)" }}>{d.category}</div>
@@ -287,6 +321,30 @@ function SupportedServices({
         </p>
       </div>
     </section>
+  );
+}
+
+function ServiceChip({
+  providerKey,
+  mark,
+  accent,
+}: {
+  providerKey: string;
+  mark: string;
+  accent: string;
+}) {
+  const hasLogo = hasServiceLogo(providerKey);
+  return (
+    <span
+      className="w-8 h-8 rounded-[7px] flex items-center justify-center text-[12px] font-semibold shrink-0"
+      style={{
+        background: hasLogo ? "var(--raised)" : `${accent}14`,
+        color: accent,
+      }}
+      aria-hidden="true"
+    >
+      {hasLogo ? <ServiceLogo providerKey={providerKey} size={19} /> : mark}
+    </span>
   );
 }
 
@@ -584,7 +642,17 @@ function SiteFooter() {
             <span className="link-underline">{latestRelease.summary}</span>
           </Link>
           <p className="text-[12.5px]" style={{ color: "var(--ink-faint)" }}>
-            Auralis is a DailyOS company. &copy; {new Date().getFullYear()}
+            Auralis is a{" "}
+            <a
+              href="https://www.dailyos.uk"
+              target="_blank"
+              rel="noreferrer"
+              className="link-underline"
+              style={{ color: "var(--ink-soft)" }}
+            >
+              DailyOS
+            </a>{" "}
+            company. &copy; {new Date().getFullYear()}
           </p>
         </div>
       </div>

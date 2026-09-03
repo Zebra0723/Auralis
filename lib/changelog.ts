@@ -18,6 +18,16 @@ export interface Release {
 /** Newest first. */
 const RELEASES: Release[] = [
   {
+    summary: "Auralis is installable, and the mark matches the real artwork",
+    date: "2026-09-03",
+    notes: [
+      "Install it from the browser like any app. It keeps working offline enough to explain itself, and never shows you stale sync state.",
+      "The logo is drawn as SVG, so the app icon, the favicon and the mark in the interface are all the same artwork.",
+      "Service marks replace the lettered chips, and the header now credits DailyOS.",
+      "A new /api/health page reports why a deployment is misconfigured, without revealing how it is configured.",
+    ],
+  },
+  {
     summary: "Added a version number and this changelog",
     date: "2026-09-03",
     notes: [

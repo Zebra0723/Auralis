@@ -98,7 +98,17 @@ export default function ChangelogPage() {
       <footer className="border-t" style={{ borderColor: "var(--line-soft)" }}>
         <div className="mx-auto max-w-[760px] px-6 py-8">
           <p className="text-[12.5px]" style={{ color: "var(--ink-faint)" }}>
-            Auralis is a DailyOS company.
+            Auralis is a{" "}
+            <a
+              href="https://www.dailyos.uk"
+              target="_blank"
+              rel="noreferrer"
+              className="link-underline"
+              style={{ color: "var(--ink-soft)" }}
+            >
+              DailyOS
+            </a>{" "}
+            company.
           </p>
         </div>
       </footer>
