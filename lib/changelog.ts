@@ -18,6 +18,15 @@ export interface Release {
 /** Newest first. */
 const RELEASES: Release[] = [
   {
+    summary: "Auralis can now run on Cloudflare as well as Vercel",
+    date: "2026-09-03",
+    notes: [
+      "All cryptography moved to WebCrypto, so nothing in Auralis depends on a Node-only API any more.",
+      "The database layer uses Cloudflare Hyperdrive when running on Workers, and the ordinary connection everywhere else.",
+      "Cloudflare cron runs the sync queue every minute rather than once a day.",
+    ],
+  },
+  {
     summary: "Auralis no longer depends on any one hosting platform",
     date: "2026-09-03",
     notes: [

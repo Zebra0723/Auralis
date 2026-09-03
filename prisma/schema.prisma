@@ -9,7 +9,10 @@
 //    included in any payload returned to the browser.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // Required for the pg driver adapter, which is how Prisma reaches Postgres
+  // on runtimes that cannot use its native query engine (Cloudflare Workers).
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
