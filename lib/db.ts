@@ -10,6 +10,38 @@ import { PrismaClient } from "@prisma/client";
  * collide unless the URL says pgbouncer=true. Rather than requiring that to be
  * remembered, the URL is corrected here.
  */
+/**
+ * Percent-encode a password that was pasted in raw.
+ *
+ * Database passwords routinely contain characters that are structural in a URL
+ * — @ separates credentials from host, : separates user from password, / ? #
+ * end the authority section. A password containing any of them makes the whole
+ * string unparseable, and the resulting error points at the URL rather than at
+ * the password inside it.
+ *
+ * The password is taken as everything between the first ":" after the scheme
+ * and the LAST "@", because an unencoded password may itself contain "@".
+ */
+function encodePasswordInUrl(raw: string): string | null {
+  const match = /^(postgres(?:ql)?:\/\/)([^:/?#@]+):(.+)@([^@]+)$/.exec(raw);
+  if (!match) return null;
+
+  const [, scheme, user, password, rest] = match;
+
+  // A leftover template placeholder is not a password. Encoding it would
+  // produce a URL that parses and then fails to authenticate, replacing a
+  // precise error with a misleading one.
+  if (/\[YOUR-PASSWORD\]|\[password\]|YOUR_PASSWORD/i.test(password)) return null;
+
+  // Already encoded, or nothing structural in it: no repair needed.
+  if (!/[@:/?#[\]%]/.test(password)) return null;
+  // A password that still contains a "%" may already be encoded; re-encoding
+  // would double it. Leave those alone rather than corrupting a working value.
+  if (password.includes("%")) return null;
+
+  return `${scheme}${user}:${encodeURIComponent(password)}@${rest}`;
+}
+
 function normaliseDatabaseUrl(raw: string | undefined): string | undefined {
   if (!raw) return raw;
 
@@ -17,8 +49,23 @@ function normaliseDatabaseUrl(raw: string | undefined): string | undefined {
   try {
     url = new URL(raw);
   } catch {
-    // Not parseable: leave it alone and let Prisma report it properly.
-    return raw;
+    // Unparseable. The usual cause is a password with structural characters
+    // in it, which is repairable, so try that before giving up.
+    const repaired = encodePasswordInUrl(raw);
+    if (repaired) {
+      try {
+        url = new URL(repaired);
+        console.info(
+          "[db] DATABASE_URL contained an unencoded password; percent-encoded it",
+        );
+        raw = repaired;
+      } catch {
+        return raw;
+      }
+    } else {
+      // Not repairable — a leftover [YOUR-PASSWORD] placeholder, say.
+      return raw;
+    }
   }
 
   // Transaction mode only. Supabase's session pooler is also on

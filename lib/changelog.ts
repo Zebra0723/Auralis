@@ -18,6 +18,14 @@ export interface Release {
 /** Newest first. */
 const RELEASES: Release[] = [
   {
+    summary: "Connection strings with awkward passwords now just work",
+    date: "2026-09-03",
+    notes: [
+      "A database password containing @ : / ? or # made the whole connection string unparseable, and sign-up failed. Auralis now percent-encodes it rather than asking you to.",
+      "A leftover [YOUR-PASSWORD] placeholder is deliberately not repaired, so the error still says what is actually wrong.",
+    ],
+  },
+  {
     summary: "Auralis is installable, and the mark matches the real artwork",
     date: "2026-09-03",
     notes: [
