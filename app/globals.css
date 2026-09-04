@@ -221,6 +221,13 @@ a {
 }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* Anything clickable should say so on a pointer device. */
+.btn:not(:disabled),
+.switch,
+summary {
+  touch-action: manipulation;
+}
+
 .btn-primary { background: var(--ink); color: #fff; }
 .btn-primary:hover:not(:disabled) { background: #33322d; }
 
@@ -238,6 +245,39 @@ a {
 .btn-danger:hover:not(:disabled) { opacity: 0.9; }
 
 .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+/* Touch targets.
+   A 32px control is comfortable with a mouse and awkward with a finger, which
+   is most of why buttons here felt unreliable on a phone. On a coarse pointer
+   every control gets at least 44px of hit area, grown with padding so the
+   visual size is unchanged — the button looks identical, it is just easier to
+   hit. */
+@media (pointer: coarse) {
+  .btn,
+  .switch,
+  select.input,
+  summary {
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    height: auto;
+    min-height: 44px;
+    padding: 0 14px;
+  }
+
+  .switch {
+    /* A switch cannot simply grow, so it keeps its size and gains an invisible
+       hit area around itself instead. */
+    min-height: 0;
+    position: relative;
+  }
+  .switch::before {
+    content: "";
+    position: absolute;
+    inset: -12px -8px;
+  }
+}
 
 .input {
   width: 100%;

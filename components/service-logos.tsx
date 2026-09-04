@@ -125,16 +125,38 @@ const LOGOS: Record<string, (size: number) => ReactNode> = {
     </svg>
   ),
 
+  // Two arcs forming a sync loop with a tick at the centre — DailyOS' own mark.
   dailyos: (s) => (
     <svg width={s} height={s} viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="11" fill="#2f6be4" />
+      <defs>
+        <linearGradient id="dailyos-mark" x1="3" y1="20" x2="21" y2="4" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#2c5a80" />
+          <stop offset="1" stopColor="#5b93bd" />
+        </linearGradient>
+      </defs>
+      {/* Upper arc, sweeping right, with its arrowhead at the end. */}
       <path
-        d="M8 7.5h3.2a4.5 4.5 0 0 1 0 9H8v-9z"
+        d="M4.4 10.2A8 8 0 0 1 18.6 7.4"
+        stroke="url(#dailyos-mark)"
+        strokeWidth="2.1"
+        strokeLinecap="round"
         fill="none"
-        stroke="#fff"
-        strokeWidth="2"
-        strokeLinejoin="round"
       />
+      <path d="M18.9 3.4v4.2h-4.2" stroke="url(#dailyos-mark)" strokeWidth="2.1"
+            strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      {/* Lower arc, sweeping back the other way. */}
+      <path
+        d="M19.6 13.8A8 8 0 0 1 5.4 16.6"
+        stroke="url(#dailyos-mark)"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path d="M5.1 20.6v-4.2h4.2" stroke="url(#dailyos-mark)" strokeWidth="2.1"
+            strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      {/* The tick, sitting inside the loop. */}
+      <path d="M8.6 12.2l2.4 2.4 4.4-5" stroke="url(#dailyos-mark)" strokeWidth="2.1"
+            strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   ),
 
