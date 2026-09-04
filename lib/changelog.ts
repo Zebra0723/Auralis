@@ -18,6 +18,14 @@ export interface Release {
 /** Newest first. */
 const RELEASES: Release[] = [
   {
+    summary: "Buttons are easier to hit on a phone, and the DailyOS mark is right",
+    date: "2026-09-04",
+    notes: [
+      "Small controls were 32px tall — comfortable with a mouse, awkward with a finger. On touch devices everything now has at least a 44px hit area, grown invisibly so nothing looks different.",
+      "The DailyOS entry uses its real mark: the sync loop with a tick.",
+    ],
+  },
+  {
     summary: "Auralis can now run on Cloudflare as well as Vercel",
     date: "2026-09-03",
     notes: [
